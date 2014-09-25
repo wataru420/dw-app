@@ -4,6 +4,8 @@ import io.dropwizard.hibernate.AbstractDAO;
 
 import java.util.List;
 
+import javax.ws.rs.core.Response;
+
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 
@@ -51,5 +53,15 @@ public class MusicDAO extends AbstractDAO<Music> {
     	}
     	
         return list(query);
+    }
+    
+    public Response deleteById(Integer id) {
+    	Query query = namedQuery("com.wataru420.helloworld.core.Music.deleteById");
+    	query.setInteger("id", id);
+    	int res = query.executeUpdate();
+    	if (res == 0) {
+    		return Response.status(Response.Status.NOT_FOUND).build();
+    	}
+        return Response.status(Response.Status.NO_CONTENT).build();
     }
 }

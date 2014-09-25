@@ -1,13 +1,20 @@
 package com.wataru420.helloworld.core;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "music")
 @NamedQueries({
+		@NamedQuery(name = "com.wataru420.helloworld.core.Music.deleteById", query = "delete Music where id = :id"),
 		@NamedQuery(name = "com.wataru420.helloworld.core.Music.findAll", query = "SELECT m FROM Music m"),
 		@NamedQuery(name = "com.wataru420.helloworld.core.Music.findByArtistId", query = "SELECT m FROM Music m where artist_id= :artistId"),
 		@NamedQuery(name = "com.wataru420.helloworld.core.Music.findByTitle", query = "SELECT m FROM Music m where title like :title"),

@@ -73,3 +73,10 @@ logging:
 
   appenders:
     - type: console
+    - type: file
+      currentLogFilename: /var/log/myapplication.log
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: /var/log/myapplication-%d.log
+      archivedFileCount: 5
+      timeZone: UTC

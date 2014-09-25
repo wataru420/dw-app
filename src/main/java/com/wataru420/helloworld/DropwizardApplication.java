@@ -8,28 +8,29 @@ import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
-
-import java.util.EnumSet;
-
-import javax.servlet.DispatcherType;
-
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import com.hubspot.dropwizard.guice.GuiceBundle;
+import com.wataru420.helloworld.core.Artist;
 import com.wataru420.helloworld.core.Music;
 import com.wataru420.helloworld.core.Person;
+import com.wataru420.helloworld.core.PlayHistory;
+import com.wataru420.helloworld.core.PlayList;
+import com.wataru420.helloworld.core.PlayListDetail;
 import com.wataru420.helloworld.core.Template;
+import com.wataru420.helloworld.db.ArtistDAO;
 import com.wataru420.helloworld.db.MusicDAO;
 import com.wataru420.helloworld.db.PersonDAO;
-import com.wataru420.helloworld.filter.DateNotSpecifiedFilter;
-import com.wataru420.helloworld.filter.DateNotSpecifiedServletFilter;
-import com.wataru420.helloworld.filter.DateRequiredFeature;
+import com.wataru420.helloworld.db.PlayHistoryDAO;
+import com.wataru420.helloworld.db.PlayListDAO;
+import com.wataru420.helloworld.db.PlayListDetailDAO;
 import com.wataru420.helloworld.health.TemplateHealthCheck;
 import com.wataru420.helloworld.resources.FilteredResource;
 import com.wataru420.helloworld.resources.HelloWorldResource;
 import com.wataru420.helloworld.resources.MusicResource;
 import com.wataru420.helloworld.resources.PeopleResource;
+import com.wataru420.helloworld.resources.PlayListResource;
 import com.wataru420.helloworld.resources.ViewResource;
 
 public class DropwizardApplication extends Application<ApplicationConfiguration> {
@@ -38,7 +39,7 @@ public class DropwizardApplication extends Application<ApplicationConfiguration>
 	}
 
 	private final HibernateBundle<ApplicationConfiguration> hibernateBundle = new HibernateBundle<ApplicationConfiguration>(
-			Person.class,Music.class) {
+			Person.class,Music.class,PlayHistory.class,PlayList.class,PlayListDetail.class,Artist.class) {
 		@Override
 		public DataSourceFactory getDataSourceFactory(
 				ApplicationConfiguration configuration) {
@@ -78,33 +79,14 @@ public class DropwizardApplication extends Application<ApplicationConfiguration>
 			Environment environment) throws ClassNotFoundException {
 		final PersonDAO dao = new PersonDAO(hibernateBundle.getSessionFactory());
 		final MusicDAO musicDAO = new MusicDAO(hibernateBundle.getSessionFactory());
+		final PlayHistoryDAO playHistoryDAO = new PlayHistoryDAO(hibernateBundle.getSessionFactory());
+		final PlayListDAO playListDAO = new PlayListDAO(hibernateBundle.getSessionFactory());
+		final PlayListDetailDAO playListDetailDAO = new PlayListDetailDAO(hibernateBundle.getSessionFactory());
+		final ArtistDAO artistDAO = new ArtistDAO(hibernateBundle.getSessionFactory());
 		final JedisPool jedisPool = new JedisPool(
 				new JedisPoolConfig(),
 				configuration.getRedis().getHostname(),
 				configuration.getRedis().getPort());
-
-		// environment.jersey().getResourceConfig().getResourceFilterFactories().add(new
-		// DateNotSpecifiedFilterFactory());
-		//
-		// environment.jersey().register(new BasicAuthProvider<>(new
-		// ExampleAuthenticator(),
-		// "SUPER SECRET STUFF"));
-		// environment.jersey().register(new HelloWorldResource(template));
-		// environment.jersey().register(new ProtectedResource());
-		
-		// environment.jersey().register(new PersonResource(dao));
-		// environment.jersey().register(new FilteredResource());
-		
-		//environment.jersey().register(new PreMatchingFilter());
-		
-		//environment.jersey().register(new DateRequiredFeature());
-		//environment.jersey().register(DateRequiredFeature.class);
-		//environment.jersey().getResourceConfig().getContainerRequestFilters().add(new DateNotSpecifiedFilter());
-		//environment.jersey().register(new DateNotSpecifiedFilter());
-		//environment.jersey().getResourceConfig().getContainerResponseFilters().add(new DateNotSpecifiedFilterFactory());
-		
-		//environment.jersey().getResourceConfig().getContainerRequestFilters().add(new PreMatchingFilter());
-		//environment.servlets().addFilter("PreMatchingFilter",DateNotSpecifiedServletFilter.class).addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
 
 		final Template template = configuration.buildTemplate();
 		environment.healthChecks().register("template",
@@ -112,7 +94,8 @@ public class DropwizardApplication extends Application<ApplicationConfiguration>
 		environment.jersey().register(new ViewResource());
 		environment.jersey().register(new HelloWorldResource(template));
 		environment.jersey().register(new PeopleResource(dao,jedisPool));
-		environment.jersey().register(new MusicResource(musicDAO,jedisPool));
+		environment.jersey().register(new MusicResource(musicDAO,playHistoryDAO,artistDAO,jedisPool));
+		environment.jersey().register(new PlayListResource(playListDAO,playListDetailDAO,musicDAO,jedisPool));
 		
 
 
