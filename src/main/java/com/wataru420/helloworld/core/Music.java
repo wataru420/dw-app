@@ -2,36 +2,39 @@ package com.wataru420.helloworld.core;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity
 @Table(name = "music")
 @NamedQueries({
-    @NamedQuery(
-        name = "com.wataru420.helloworld.core.Music.findAll",
-        query = "SELECT m FROM Music m"
-    )
-})
+		@NamedQuery(name = "com.wataru420.helloworld.core.Music.findAll", query = "SELECT m FROM Music m"),
+		@NamedQuery(name = "com.wataru420.helloworld.core.Music.findByArtistId", query = "SELECT m FROM Music m where artist_id= :artistId"),
+		@NamedQuery(name = "com.wataru420.helloworld.core.Music.findByTitle", query = "SELECT m FROM Music m where title like :title"),
+		@NamedQuery(name = "com.wataru420.helloworld.core.Music.findByArtistIdAndTitle", query = "SELECT m FROM Music m where artist_id= :artistId and  title like :title")})
 public class Music {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    
-    @Column(name = "artist_id", nullable = false)
-    private Integer artistId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
 
-    @Column(name = "title", nullable = false)
-    private String title;
+	@Column(name = "artist_id", nullable = false)
+	private Integer artistId;
 
-    @Column(name = "outline", nullable = true)
-    private String outline;
+	@Column(name = "title", nullable = false)
+	private String title;
 
-    public long getId() {
-        return id;
-    }
+	@Column(name = "outline", nullable = true)
+	private String outline;
 
-    public void setId(long id) {
-        this.id = id;
-    }
+	public Integer getId() {
+		return id;
+	}
 
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	@JsonProperty("artist_id")
 	public Integer getArtistId() {
 		return artistId;
 	}
